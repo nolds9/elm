@@ -63,5 +63,6 @@ out =
         |> toString
 
 
+main : Html.Html msg
 main =
     text out
