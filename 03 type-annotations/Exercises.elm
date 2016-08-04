@@ -18,8 +18,8 @@ cart =
     ]
 
 
-updateFree : Item -> Int -> Int -> Item
-updateFree item qty free =
+updateFree : Int -> Int -> Item -> Item
+updateFree qty free item =
     if item.qty >= qty then
         { item
             | freeQty = item.freeQty + free
@@ -30,7 +30,7 @@ updateFree item qty free =
 
 out : List Item -> String
 out cart =
-    toString (List.map updateFree cart)
+    toString (List.map (updateFree 3 5) cart)
 
 
 main : Html msg
