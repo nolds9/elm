@@ -1,16 +1,13 @@
 module Main exposing (..)
 
-import Html exposing (Html, text, div, ul, li, p, h1, h2, h3)
+import Html exposing (Html, text, div, ul, li, p, h1, h2, h3, input, button)
 import Html.App as App
 import Html.Attributes exposing (..)
 import Array exposing (Array, toList, fromList, push)
+import Html.Events exposing (..)
 
 
--- import Html.Events exposing (..)
 -- import Debug exposing (log)
-
-
-
 -- MODEL
 
 
@@ -46,9 +43,14 @@ gary =
     Student 3 "Gary"
 
 
+larry : Student
+larry =
+    Student 4 "Larry"
+
+
 defaultStudents : Array Student
 defaultStudents =
-    fromList [ mary, jerry, gary ]
+    fromList [ jerry, gary, larry ]
 
 
 defaultStudent : Student
@@ -66,7 +68,8 @@ initModel =
 
 
 type Msg
-    = AddStudent String
+    = AddStudent
+    | Input String
 
 
 
@@ -79,7 +82,7 @@ type Msg
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        AddStudent name ->
+        AddStudent ->
             -- grab the last Student in the Model.students if there is one
             let
                 reversedStudents =
@@ -107,30 +110,47 @@ update msg model =
                     resolveStudentMaybe lastStudent
 
                 newStudent =
-                    Student (resolvedStudent.id + 1) name
+                    Student (resolvedStudent.id + 1) model.studentName
             in
                 -- add the student to back of the queue
                 { model
                     | students =
                         push newStudent model.students
+                    , studentName = ""
                 }
+
+        Input str ->
+            { model | studentName = str }
 
 
 
 -- VIEW
 
 
-renderHeader : Html msg
+view : Model -> Html Msg
+view model =
+    div [ class "main-container" ]
+        [ renderHeader
+        , div
+            [ class "main-content" ]
+            [ (renderQueue model)
+            , renderCurrentStudent mary
+            ]
+        , (renderNewStudent model)
+        ]
+
+
+renderHeader : Html Msg
 renderHeader =
-    h1 [ id "title" ] [ text "Kewy" ]
+    h1 [ id "title" ] [ text "Q" ]
 
 
-renderStudent : Student -> Html msg
+renderStudent : Student -> Html Msg
 renderStudent student =
     li [ class "student" ] [ text student.name ]
 
 
-renderQueue : Model -> Html msg
+renderQueue : Model -> Html Msg
 renderQueue model =
     let
         studentsList =
@@ -144,7 +164,7 @@ renderQueue model =
             ]
 
 
-renderCurrentStudent : Student -> Html msg
+renderCurrentStudent : Student -> Html Msg
 renderCurrentStudent student =
     div [ class "current-container" ]
         [ h3 [ id "active" ] [ text "Helping" ]
@@ -152,15 +172,11 @@ renderCurrentStudent student =
         ]
 
 
-view : Model -> Html msg
-view model =
-    div [ class "main-container" ]
-        [ renderHeader
-        , div
-            [ class "main-content" ]
-            [ (renderQueue model)
-            , renderCurrentStudent mary
-            ]
+renderNewStudent : Model -> Html Msg
+renderNewStudent model =
+    div [ class "form-container" ]
+        [ input [ type' "text", onInput Input, value model.studentName ] []
+        , button [ id "student-submit", onClick AddStudent ] [ text "Add" ]
         ]
 
 
