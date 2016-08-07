@@ -1,18 +1,36 @@
+* {
+  color: #F6B352;
+}
+
+html {
+  zoom: 110%;
+}
+
 h1 {
   text-align: center;
+  color: #F68657
 }
+
+h3 {
+  color: #F68657;
+}
+
+body {
+  background-color: #1F2124;
+}
+
 .main-content {
   display: flex;
 }
 
 .queue-container {
-  background-color: #d9d9d9;
+  background-color: #383A3F;
   flex: 1;
   padding: 2rem;
 }
 
 .current-container {
-  background-color: #d9d9d9;
+  background-color: #383A3F;
   flex: 1;
   padding: 2rem;
 }
@@ -34,9 +52,15 @@ h1 {
 }
 
 #student-input {
-  width: 255px;
+  min-width: 85%;
+  padding: 5 px
 }
 
 #student-submit {
-  padding-left: 5px;
+  background-color: #F68657;
+  padding: 5px;
+}
+
+#logo {
+  margin-left: 3em;
 }

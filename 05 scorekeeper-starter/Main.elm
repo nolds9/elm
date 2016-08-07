@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Html exposing (Html, text, div, ul, li, p, h1, h2, h3, input, button, span, form)
+import Html exposing (Html, img, text, div, ul, li, p, h1, h2, h3, input, button, span)
 import Html.App as App
 import Html.Attributes exposing (..)
 import Array exposing (Array, toList, fromList, push)
@@ -188,7 +188,7 @@ view model =
 
 renderHeader : Html Msg
 renderHeader =
-    h1 [ id "title" ] [ text "Q" ]
+    img [ id "logo", src "gaq-logo.png" ] []
 
 
 renderStudent : Student -> Html Msg
