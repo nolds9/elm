@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Html exposing (Html, text, div, ul, li, p, h1, h2, h3, input, button)
+import Html exposing (Html, text, div, ul, li, p, h1, h2, h3, input, button, span, form)
 import Html.App as App
 import Html.Attributes exposing (..)
 import Array exposing (Array, toList, fromList, push)
@@ -70,12 +70,11 @@ initModel =
 type Msg
     = AddStudent
     | Input String
+    | SetCurrent
+    | DeleteStudent Student
 
 
 
--- | NameInput
--- | SetCurrent Student
--- | RemoveStudent Student
 -- | CancelInput
 
 
@@ -98,29 +97,72 @@ update msg model =
                     else
                         Nothing
 
-                resolveStudentMaybe student =
-                    case student of
-                        Just student ->
-                            student
-
-                        Nothing ->
-                            defaultStudent
-
                 resolvedStudent =
                     resolveStudentMaybe lastStudent
 
                 newStudent =
                     Student (resolvedStudent.id + 1) model.studentName
+
+                notEmpty student =
+                    student.name /= ""
+
+                updatedStudents =
+                    model.students
+                        |> push newStudent
+                        |> Array.filter notEmpty
             in
                 -- add the student to back of the queue
                 { model
-                    | students =
-                        push newStudent model.students
+                    | students = updatedStudents
                     , studentName = ""
                 }
 
         Input str ->
             { model | studentName = str }
+
+        SetCurrent ->
+            let
+                firstStudent =
+                    resolveStudentMaybe (getFirstStudent model.students)
+
+                isNotFirstStudent student =
+                    student.id /= firstStudent.id
+
+                updatedStudents =
+                    Array.filter isNotFirstStudent model.students
+            in
+                { model | currentStudent = firstStudent, students = updatedStudents }
+
+        DeleteStudent student ->
+            let
+                notStudent std =
+                    student.id /= std.id
+
+                updatedStudents =
+                    Array.filter notStudent model.students
+            in
+                { model
+                    | students = updatedStudents
+                }
+
+
+
+-- update helpers
+
+
+resolveStudentMaybe : Maybe Student -> Student
+resolveStudentMaybe student =
+    case student of
+        Just student ->
+            student
+
+        Nothing ->
+            defaultStudent
+
+
+getFirstStudent : Array Student -> Maybe Student
+getFirstStudent students =
+    Array.get 0 students
 
 
 
@@ -134,10 +176,14 @@ view model =
         , div
             [ class "main-content" ]
             [ (renderQueue model)
-            , renderCurrentStudent mary
+            , renderCurrentStudent model
             ]
         , (renderNewStudent model)
         ]
+
+
+
+--  view helpers
 
 
 renderHeader : Html Msg
@@ -147,7 +193,10 @@ renderHeader =
 
 renderStudent : Student -> Html Msg
 renderStudent student =
-    li [ class "student" ] [ text student.name ]
+    li [ class "student" ]
+        [ span [ id "delete", onClick (DeleteStudent student) ] [ text "❌" ]
+        , text student.name
+        ]
 
 
 renderQueue : Model -> Html Msg
@@ -164,19 +213,35 @@ renderQueue model =
             ]
 
 
-renderCurrentStudent : Student -> Html Msg
-renderCurrentStudent student =
-    div [ class "current-container" ]
-        [ h3 [ id "active" ] [ text "Helping" ]
-        , p [ class "student-name" ] [ text student.name ]
-        ]
+renderCurrentStudent : Model -> Html Msg
+renderCurrentStudent model =
+    if model.currentStudent.name /= "" then
+        div [ class "current-container" ]
+            [ h3 [ id "active" ] [ text "Helping" ]
+            , p [ class "student-name" ]
+                [ text model.currentStudent.name
+                , span [ id "next", onClick SetCurrent ] [ text "✅" ]
+                ]
+            ]
+    else
+        div [ class "current-container" ]
+            [ h3 [ id "active" ] [ text "Helping" ] ]
 
 
 renderNewStudent : Model -> Html Msg
 renderNewStudent model =
     div [ class "form-container" ]
-        [ input [ type' "text", onInput Input, value model.studentName ] []
-        , button [ id "student-submit", onClick AddStudent ] [ text "Add" ]
+        [ Html.form [ onSubmit AddStudent ]
+            [ input
+                [ id "student-input"
+                , type' "text"
+                , onInput Input
+                , value model.studentName
+                , placeholder "Name"
+                ]
+                []
+            , button [ id "student-submit" ] [ text "Add" ]
+            ]
         ]
 
 
