@@ -111,11 +111,16 @@ update msg model =
                         |> push newStudent
                         |> Array.filter notEmpty
             in
-                -- add the student to back of the queue
-                { model
-                    | students = updatedStudents
-                    , studentName = ""
-                }
+                if ((Array.isEmpty model.students) && model.currentStudent.name == "") then
+                    { model
+                        | currentStudent = newStudent
+                        , studentName = ""
+                    }
+                else
+                    { model
+                        | students = updatedStudents
+                        , studentName = ""
+                    }
 
         Input str ->
             { model | studentName = str }
