@@ -59,10 +59,24 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         Edit player ->
-            model
+            { model | name = player.name, playerId = Just player.id }
 
         Score player points ->
-            model
+            let
+                updatedPlayers =
+                    List.map
+                        (\plyr ->
+                            if plyr.id == player.id then
+                                { plyr | points = plyr.points + points }
+                            else
+                                plyr
+                        )
+                        model.players
+
+                newPlay =
+                    Play (List.length model.plays + 1) points player.id player.name
+            in
+                { model | players = updatedPlayers, plays = newPlay :: model.plays }
 
         Input str ->
             { model | name = str }
@@ -145,8 +159,60 @@ view : Model -> Html Msg
 view model =
     div [ class "scoreboard" ]
         [ h1 [] [ text "Score Keeper" ]
+        , renderPlayersSection model
         , renderPlayerForm model
         , p [] [ text (toString model) ]
+        ]
+
+
+renderPlayersSection : Model -> Html Msg
+renderPlayersSection model =
+    div []
+        [ renderPlayerListHeader
+        , renderPlayerList model
+        , renderPointTotal model
+        ]
+
+
+renderPlayerListHeader : Html Msg
+renderPlayerListHeader =
+    header []
+        [ div [] [ text "Name" ]
+        , div [] [ text "Points" ]
+        ]
+
+
+renderPointTotal : Model -> Html Msg
+renderPointTotal model =
+    let
+        total =
+            model.plays
+                |> List.map .points
+                |> List.sum
+                |> toString
+    in
+        footer []
+            [ div [] [ text "Total: " ]
+            , div [] [ text total ]
+            ]
+
+
+renderPlayerList : Model -> Html Msg
+renderPlayerList model =
+    model.players
+        |> List.sortBy .name
+        |> List.map renderPlayerDetail
+        |> ul []
+
+
+renderPlayerDetail : Player -> Html Msg
+renderPlayerDetail player =
+    li []
+        [ i [ class "edit", onClick (Edit player) ] []
+        , div [] [ text player.name ]
+        , button [ type' "button", onClick (Score player 2) ] [ text "2pt" ]
+        , button [ type' "button", onClick (Score player 3) ] [ text "3pt" ]
+        , div [] [ text (toString player.points) ]
         ]
 
 
