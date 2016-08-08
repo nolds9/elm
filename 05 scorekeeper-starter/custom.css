@@ -52,13 +52,14 @@ body {
 }
 
 #student-input {
-  min-width: 85%;
+  min-width: 82%;
   padding: 5 px
 }
 
 #student-submit {
   background-color: #F68657;
-  padding: 5px;
+  max-width: none;
+  min-width: none;
 }
 
 #logo {
