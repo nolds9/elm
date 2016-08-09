@@ -91,7 +91,25 @@ update msg model =
             { model | name = "", playerId = Nothing }
 
         DeletePlay play ->
-            model
+            let
+                updatedPlayers =
+                    List.map
+                        (\player ->
+                            if player.id == play.playerId then
+                                { player | points = (player.points - play.points) }
+                            else
+                                player
+                        )
+                        model.players
+
+                updatedPlays =
+                    List.filter
+                        (\ply ->
+                            ply.playerId /= play.playerId
+                        )
+                        model.plays
+            in
+                { model | plays = updatedPlays, players = updatedPlayers }
 
 
 save : Model -> Model
@@ -161,23 +179,47 @@ view model =
         [ h1 [] [ text "Score Keeper" ]
         , renderPlayersSection model
         , renderPlayerForm model
-        , p [] [ text (toString model) ]
+        , renderPlaysSection model
+        ]
+
+
+renderPlaysSection : Model -> Html Msg
+renderPlaysSection model =
+    div []
+        [ renderListHeader "Plays"
+        , renderPlaysList model
+        ]
+
+
+renderPlaysList : Model -> Html Msg
+renderPlaysList model =
+    model.plays
+        |> List.map renderPlayDetail
+        |> ul []
+
+
+renderPlayDetail : Play -> Html Msg
+renderPlayDetail play =
+    li []
+        [ i [ class "remove", onClick (DeletePlay play) ] []
+        , div [] [ text play.name ]
+        , div [] [ text (toString play.points) ]
         ]
 
 
 renderPlayersSection : Model -> Html Msg
 renderPlayersSection model =
     div []
-        [ renderPlayerListHeader
+        [ renderListHeader "Name"
         , renderPlayerList model
         , renderPointTotal model
         ]
 
 
-renderPlayerListHeader : Html Msg
-renderPlayerListHeader =
+renderListHeader : String -> Html Msg
+renderListHeader title =
     header []
-        [ div [] [ text "Name" ]
+        [ div [] [ text title ]
         , div [] [ text "Points" ]
         ]
 
